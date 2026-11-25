@@ -41,6 +41,7 @@
     if ($("#clock").textContent !== display) $("#clock").textContent = display;
     $("#toggle").textContent = timer.end !== null ? "Tạm dừng" : timer.started ? "Tiếp tục" : "Bắt đầu";
     $("#session-mode").value = timer.mode;
+    $("#session-progress").value = Math.round(100 * (1 - ms / timer.duration));
   }
 
   async function tick() {
@@ -116,15 +117,49 @@
     }
   });
 
+  const sceneButtons = [...all("button[data-scene]")];
   function selectScene(name) {
-    document.body.dataset.scene = name;
-    for (const button of all("button[data-scene]")) {
-      button.setAttribute("aria-pressed", String(button.dataset.scene === name));
+    const selected = sceneButtons.find((button) => button.dataset.scene === name) ?? sceneButtons[0];
+    if (!selected) return;
+    const scene = selected.dataset.scene;
+    document.body.dataset.scene = scene;
+    $("#current-scene-name").textContent = selected.querySelector(".scene-name").textContent;
+    for (const button of sceneButtons) {
+      button.setAttribute("aria-pressed", String(button === selected));
     }
-    put("scene", name);
+    put("scene", scene);
   }
-  for (const button of all("button[data-scene]")) button.onclick = () => selectScene(button.dataset.scene);
+  for (const button of sceneButtons) button.onclick = () => selectScene(button.dataset.scene);
   selectScene(get("scene", "rain"));
+
+  const greetingHour = new Date().getHours();
+  $("#greeting").textContent = greetingHour < 11 ? "Chào buổi sáng ☀️"
+    : greetingHour < 18 ? "Chào buổi chiều 🌤" : "Chào buổi tối 🌙";
+  for (const button of all("[data-scenes-link]")) {
+    button.onclick = () => sceneButtons.find((scene) => scene.getAttribute("aria-pressed") === "true")?.focus();
+  }
+
+  const themeButtons = [...all("[data-theme]")];
+  function selectTheme(button) {
+    document.documentElement.dataset.accent = button.dataset.theme;
+    for (const option of themeButtons) option.setAttribute("aria-pressed", String(option === button));
+    put("accent", button.dataset.theme);
+  }
+  for (const button of themeButtons) button.onclick = () => selectTheme(button);
+  const savedTheme = themeButtons.find((button) => button.dataset.theme === get("accent", "peach")) ?? themeButtons[0];
+  if (savedTheme) selectTheme(savedTheme);
+
+  const darkMode = $("#dark-mode");
+  const quoteToggle = $("#quote-toggle");
+  darkMode.checked = get("dark-glass", false);
+  quoteToggle.checked = get("focus-quote", true);
+  function applyAppearance() {
+    document.body.classList.toggle("dark-glass", darkMode.checked);
+    $("#focus-quote").hidden = !quoteToggle.checked;
+  }
+  darkMode.onchange = () => { applyAppearance(); put("dark-glass", darkMode.checked); };
+  quoteToggle.onchange = () => { applyAppearance(); put("focus-quote", quoteToggle.checked); };
+  applyAppearance();
 
   let musicPlaying = false;
   $("#track").value = get("track", "lofi");
@@ -134,11 +169,9 @@
     play.disabled = true;
     try {
       if (musicPlaying) stopMusic();
-      else {
-        closeYouTube(false);
-        await startMusic($("#track").value, $("#music-volume").value);
-      }
+      else await startMusic($("#track").value, $("#music-volume").value);
       musicPlaying = !musicPlaying;
+      if (musicPlaying) externalAudio.pause();
       play.setAttribute("aria-pressed", String(musicPlaying));
       play.setAttribute("aria-label", musicPlaying ? "Tạm dừng nhạc" : "Phát nhạc");
     } catch (error) {
@@ -151,52 +184,74 @@
     put("track", event.target.value);
     if (musicPlaying) await startMusic(event.target.value, $("#music-volume").value).catch(report);
   };
+  const trackSelect = $("#track");
+  for (const [id, step] of [["#previous-track", -1], ["#next-track", 1]]) {
+    $(id).onclick = () => {
+      trackSelect.selectedIndex = (trackSelect.selectedIndex + step + trackSelect.options.length) % trackSelect.options.length;
+      void trackSelect.onchange({ target: trackSelect });
+    };
+  }
   $("#music-volume").oninput = (event) => {
     put("music-volume", Number(event.target.value));
     setMusicVolume(event.target.value);
   };
-  function closeYouTube(restoreFocus) {
-    $("#youtube-video").replaceChildren();
-    $("#youtube-message").textContent = "";
-    $("#youtube-external").hidden = true;
-    $("#youtube-panel").hidden = true;
-    $("#youtube-open").setAttribute("aria-expanded", "false");
-    if (restoreFocus) $("#youtube-open").focus();
+  const externalAudio = $("#external-audio-player");
+  const externalAudioPanel = $("#external-audio-panel");
+  const externalAudioOpen = $("#external-audio-open");
+  const externalAudioUrl = $("#external-audio-url");
+  const externalAudioMessage = $("#external-audio-message");
+
+  function showExternalAudio(open) {
+    externalAudioPanel.hidden = !open;
+    externalAudioOpen.setAttribute("aria-expanded", String(open));
+    if (!open) externalAudio.pause();
+    (open ? externalAudioUrl : externalAudioOpen).focus();
   }
 
-  $("#youtube-open").onclick = () => {
-    if (!$("#youtube-panel").hidden) {
-      closeYouTube(true);
-      return;
-    }
-    $("#youtube-panel").hidden = false;
-    $("#youtube-open").setAttribute("aria-expanded", "true");
-    $("#youtube-url").focus();
+  externalAudioOpen.onclick = () => showExternalAudio(externalAudioPanel.hidden);
+  $("#external-audio-close").onclick = () => showExternalAudio(false);
+
+  externalAudio.onplay = () => {
+    stopMusic();
+    musicPlaying = false;
+    $("#play").setAttribute("aria-pressed", "false");
+    $("#play").setAttribute("aria-label", "Phát nhạc");
+    externalAudioMessage.textContent = "";
   };
-  $("#youtube-close").onclick = () => closeYouTube(true);
-  $("#youtube-form").onsubmit = (event) => {
+
+  externalAudio.onerror = () => {
+    externalAudioMessage.textContent = "Không tải được âm thanh. Kiểm tra link có mở trực tiếp tệp nhạc và nguồn có cho phát từ website khác.";
+  };
+
+  $("#external-audio-form").onsubmit = async (event) => {
     event.preventDefault();
-    const id = studyYouTube.videoId($("#youtube-url").value);
-    const message = $("#youtube-message");
-    if (!id) {
-      message.textContent = "Hãy dán liên kết tới một video YouTube cụ thể.";
+    let url;
+    try {
+      url = new URL(externalAudioUrl.value.trim());
+    } catch {
+      externalAudioMessage.textContent = "Nhập URL đầy đủ của tệp âm thanh.";
       return;
     }
-    const external = $("#youtube-external");
-    external.href = `https://www.youtube.com/watch?v=${id}`;
-    external.hidden = false;
-    if (!["http:", "https:"].includes(location.protocol)) {
-      message.textContent = "Hãy mở Study Space qua localhost để dùng trình phát nhúng, hoặc mở video bằng liên kết bên dưới.";
+    if (!["http:", "https:"].includes(url.protocol) || url.username || url.password) {
+      externalAudioMessage.textContent = "Dùng URL HTTP hoặc HTTPS không chứa thông tin đăng nhập.";
       return;
     }
-    if (musicPlaying) {
-      stopMusic();
-      musicPlaying = false;
-      $("#play").setAttribute("aria-pressed", "false");
-      $("#play").setAttribute("aria-label", "Phát nhạc");
+    if (location.protocol === "https:" && url.protocol === "http:") {
+      externalAudioMessage.textContent = "Hãy dùng URL HTTPS để phát trên trang này.";
+      return;
     }
-    $("#youtube-video").replaceChildren(studyYouTube.createPlayer(id));
-    message.textContent = "Bấm phát trên video. Nếu video không phát được ở đây, hãy mở trên YouTube.";
+    externalAudio.hidden = false;
+    externalAudioMessage.textContent = "Đang mở tệp âm thanh…";
+    externalAudio.src = url.href;
+    try {
+      await externalAudio.play();
+    } catch (error) {
+      if (error.name === "NotAllowedError") {
+        externalAudioMessage.textContent = "Bấm nút phát trên trình phát âm thanh để nghe.";
+      } else if (error.name !== "AbortError") {
+        externalAudio.onerror();
+      }
+    }
   };
 
   const muteLayers = [];

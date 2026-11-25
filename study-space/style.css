@@ -90,7 +90,7 @@ body.immersive main { grid-template-columns: minmax(0, 1fr); }
   #scenes .scene-grid button { min-height: 6.5rem; padding: .45rem; font-size: .82rem; }
 }
 
-#youtube-panel {
+#external-audio-panel {
   position: fixed;
   z-index: 3;
   right: clamp(.65rem, 2vw, 2rem);
@@ -104,17 +104,16 @@ body.immersive main { grid-template-columns: minmax(0, 1fr); }
   background: var(--panel);
   box-shadow: 0 12px 40px #100a0875;
 }
-#youtube-form { display: flex; gap: .4rem; }
-#youtube-url { flex: 1; min-width: 0; }
-#youtube-message { margin: .55rem 0; color: var(--muted); font-size: .82rem; }
-#youtube-message:empty { display: none; }
-#youtube-video iframe { display: block; border: 0; width: 100%; aspect-ratio: 16/9; min-height: 200px; border-radius: 10px; }
-#youtube-external { color: var(--gold); font-size: .82rem; }
-#youtube-external:not([hidden]) { display: inline-block; margin-top: .55rem; }
-#youtube-open { border-radius: 999px; background: var(--glass); }
+#external-audio-form { display: flex; gap: .4rem; }
+#external-audio-url { flex: 1; min-width: 0; }
+#external-audio-message { margin: .55rem 0; color: var(--muted); font-size: .82rem; }
+#external-audio-message:empty { display: none; }
+#external-audio-player { width: 100%; }
+.external-audio-help { margin: .55rem 0; color: var(--muted); font-size: .82rem; }
+#external-audio-open { border-radius: 999px; background: var(--glass); }
 @media (max-width: 760px) {
-  #youtube-open { font-size: .75rem; padding: .5rem; }
-  #youtube-panel { bottom: 4rem; }
+  #external-audio-open { font-size: .75rem; padding: .5rem; }
+  #external-audio-panel { bottom: 4rem; }
 }
 
 .icon-sprite { position: absolute; width: 0; height: 0; overflow: hidden; pointer-events: none; }
@@ -139,4 +138,61 @@ button[aria-pressed="true"] .scene-selected { visibility: visible; }
   .brand > .icon { width: 1.35rem; height: 1.35rem; }
   .sidebar nav button { min-height: 44px; }
   .sidebar nav button > .icon { width: 1rem; height: 1rem; }
+}
+
+/* Keep the study controls readable without dimming the entire room. */
+.top-actions { align-items: center; justify-content: space-between; gap: .5rem; }
+.current-scene {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  min-height: 44px;
+  border-radius: 999px;
+  background: #30231ee8;
+}
+.current-scene .icon { color: var(--gold); }
+.focus {
+  background: linear-gradient(155deg, #302c2be8, #1d181ac9);
+  padding: clamp(1.35rem, 3vw, 3rem) clamp(1rem, 3vw, 2.25rem) 1rem;
+}
+#session-mode { margin: 0 0 .6rem; }
+#clock { letter-spacing: -.075em; line-height: 1.12; }
+#session-progress {
+  display: block;
+  width: min(70%, 17rem);
+  height: .32rem;
+  margin: .95rem auto 1.35rem;
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  background: #ffead13b;
+  accent-color: var(--gold);
+}
+#session-progress::-webkit-progress-bar { background: transparent; }
+#session-progress::-webkit-progress-value { background: var(--gold); border-radius: 999px; }
+#session-progress::-moz-progress-bar { background: var(--gold); border-radius: 999px; }
+.audio-shortcuts { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: .45rem; }
+.audio-shortcuts button { min-height: 44px; }
+#scenes .scene-grid button { min-width: 0; }
+@media (max-width: 760px) {
+  body { padding-bottom: env(safe-area-inset-bottom); }
+  .top-actions { padding-inline: .65rem; }
+  .top-actions button { font-size: .78rem; padding-inline: .55rem; }
+  .top-actions .icon { width: 1rem; height: 1rem; }
+  footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    display: grid;
+    gap: .4rem;
+    background: #211915f2;
+    border-top: 1px solid var(--line);
+    padding: .5rem .65rem max(.5rem, env(safe-area-inset-bottom));
+  }
+  .player { justify-content: center; width: 100%; }
+  .player select { max-width: min(52vw, 15rem); }
+  .music-volume input { width: clamp(3rem, 17vw, 6rem); }
+  .audio-shortcuts .ambient-shortcut { display: inline-block; font-size: .75rem; padding: .5rem; }
+  #organizer, #external-audio-panel { bottom: calc(7.5rem + env(safe-area-inset-bottom)); max-height: calc(100dvh - 8.5rem - env(safe-area-inset-bottom)); }
 }

@@ -18,6 +18,6 @@ Mở http://localhost:8000. Để xem trên điện thoại cùng mạng, mở �
 
 Nhạc và tiếng nền được tổng hợp bằng Web Audio. Tùy chọn và đồng hồ dùng LocalStorage. Việc cần làm và lịch sử học dùng IndexedDB, theo địa chỉ trang trên từng trình duyệt. Việc lưu dữ liệu khi mở trực tiếp qua file có thể khác nhau giữa các trình duyệt, nên ưu tiên dùng địa chỉ localhost khi thử lưu trữ.
 
-## Dùng nhạc từ YouTube
+## Dùng nhạc từ URL
 
-Mở Study Space qua địa chỉ HTTP (ví dụ http://localhost:8000). Bấm **YouTube**, dán liên kết đến một video rồi bấm **Mở**. Dùng nút phát trong trình YouTube nhúng. Có thể giữ âm nền Study Space, như mưa hoặc sóng biển. Một số video không cho phát nhúng, khi đó có thể dùng **Mở trên YouTube**.
+Bấm **Nhạc từ URL**, dán liên kết trực tiếp tới tệp âm thanh rồi bấm **Phát**. Trình phát hỗ trợ tua nếu tệp và máy chủ cho phép. Bạn có thể giữ âm nền mưa hoặc sóng biển trong lúc nghe. Nguồn nhạc cần cho phép trình duyệt truy cập tệp. Các trang xem video, playlist và liên kết chia sẻ cần mở được tệp âm thanh trực tiếp mới sử dụng được. Trên website chạy HTTPS, dùng URL âm thanh HTTPS.
