@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Study Space</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500&display=swap">
+  <style>
+    :root {
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      --ac: #f6c3a3;
+      --g: rgba(255, 236, 220, .16);
+      --gb: rgba(255, 255, 255, .22);
+      --tx: #fff;
+      --mu: rgba(255, 255, 255, .7)
+    }
+
+    :root.dark {
+      --g: rgba(10, 10, 18, .5);
+      --gb: rgba(255, 255, 255, .1)
+    }
+
+    html {
+      scroll-padding-top: env(safe-area-inset-top, 0px)
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      color: var(--tx);
+      background: #222;
+      overflow: hidden
+    }
+
+    button {
+      font: inherit;
+      color: inherit;
+      cursor: pointer;
+      background: none;
+      border: 0
+    }
+
+    #bg,
+    #rain,
+    #shade {
+      position: fixed;
+      inset: 0;
+      z-index: 0
+    }
+
+    #bg {
+      background-size: cover;
+      background-position: center;
+      transition: background .6s
+    }
+
+    #rain {
+      z-index: 1;
+      pointer-events: none
+    }
+
+    #shade {
+      z-index: 1;
+      background: #000;
+      opacity: .12;
+      pointer-events: none
+    }
+
+    .glass {
+      background: var(--g);
+      border: 1px solid var(--gb);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-radius: 22px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, .18)
+    }
+
+    #app {
+      position: relative;
+      z-index: 2;
+      height: 100%;
+      display: grid;
+      grid-template-columns: 196px 1fr 330px;
+      grid-template-rows: auto 1fr auto auto;
+      gap: 14px;
+      padding: 14px
+    }
+
+    nav {
+      grid-row: 1/-1;
+      padding: 18px 12px;
+      display: flex;
+      flex-direction: column;
+      border-radius: 24px
+    }
+
+    .logo {
+      text-align: center;
+      margin-bottom: 18px
+    }
+
+    .logo b {
+      display: block;
+      font-size: 20px;
+      margin-top: 2px
+    }
+
+    .logo small {
+      color: var(--mu);
+      font-size: 11px
+    }
+
+    .logo .mo {
+      font-size: 42px
+    }
+
+    nav button {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 11px 14px;
+      border-radius: 14px;
+      text-align: left;
+      font-size: 14px;
+      color: var(--tx);
+      width: 100%;
+      margin-bottom: 3px
+    }
+
+    nav button:hover {
+      background: rgba(255, 255, 255, .1)
+    }
+
+    nav button.on {
+      background: rgba(255, 255, 255, .22);
+      border: 1px solid var(--gb)
+    }
+
+    nav hr {
+      border: 0;
+      border-top: 1px solid var(--gb);
+      margin: auto 6px 10px
+    }
+
+    nav .q {
+      font-family: Caveat, cursive;
+      text-align: center;
+      color: var(--mu);
+      margin: 6px 0 0;
+      font-size: 18px
+    }
+
+    #top {
+      grid-column: 3;
+      display: flex;
+      justify-content: flex-end
+    }
+
+    #hi {
+      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-radius: 999px;
+      font-size: 14px
+    }
+
+    #timer {
+      grid-column: 2;
+      grid-row: 1/3;
+      place-self: center;
+      width: min(500px, 100%);
+      padding: 30px 24px;
+      text-align: center
+    }
+
+    #qt {
+      font-family: Caveat, cursive;
+      font-size: clamp(22px, 2.6vw, 32px);
+      line-height: 1.15;
+      min-height: 2.3em
+    }
+
+    #tm {
+      font-size: clamp(72px, 10vw, 132px);
+      font-weight: 700;
+      line-height: 1;
+      margin: 10px 0;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 4px 30px rgba(0, 0, 0, .25)
+    }
+
+    #mode {
+      padding: 9px 18px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, .14);
+      border: 1px solid var(--gb);
+      margin-bottom: 20px;
+      appearance: none;
+      -webkit-appearance: none;
+      color: var(--tx);
+      font: inherit;
+      text-align: center
+    }
+
+    #mode option {
+      color: #222
+    }
+
+    .ctl {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 18px
+    }
+
+    .rb {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 1px solid var(--gb);
+      font-size: 22px;
+      background: rgba(255, 255, 255, .1)
+    }
+
+    .play {
+      width: 136px;
+      height: 68px;
+      border-radius: 999px;
+      background: var(--ac);
+      color: #2b1a10;
+      font-size: 28px;
+      border: 0;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, .2)
+    }
+
+    #right {
+      grid-column: 3;
+      grid-row: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+      min-height: 0
+    }
+
+    .card {
+      padding: 18px
+    }
+
+    .card h4 {
+      margin: 0 0 12px;
+      font-size: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    .prog {
+      display: flex;
+      align-items: center;
+      gap: 22px
+    }
+
+    #ring {
+      width: 112px;
+      height: 112px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      flex: none
+    }
+
+    #ring div {
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      background: rgba(30, 25, 25, .55);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: var(--mu)
+    }
+
+    #ring b {
+      font-size: 20px;
+      color: #fff
+    }
+
+    .dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 8px
+    }
+
+    .st {
+      font-size: 14px;
+      line-height: 2.1
+    }
+
+    #add {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px
+    }
+
+    #add input {
+      flex: 1;
+      min-width: 0;
+      background: rgba(255, 255, 255, .12);
+      border: 1px solid var(--gb);
+      border-radius: 999px;
+      padding: 9px 14px;
+      color: #fff;
+      outline: 0
+    }
+
+    #add input::placeholder {
+      color: var(--mu)
+    }
+
+    #add button {
+      width: 38px;
+      border-radius: 50%;
+      background: var(--ac);
+      color: #2b1a10;
+      font-size: 20px
+    }
+
+    .task {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 2px;
+      font-size: 14px
+    }
+
+    .task input {
+      accent-color: var(--ac);
+      width: 18px;
+      height: 18px
+    }
+
+    .task.done span {
+      text-decoration: line-through;
+      color: var(--mu)
+    }
+
+    .task .x {
+      margin-left: auto;
+      opacity: .5
+    }
+
+    #bars {
+      grid-column: 2/4;
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap
+    }
+
+    .bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border-radius: 22px
+    }
+
+    #music {
+      flex: 1 1 440px
+    }
+
+    #amb {
+      flex: 0 1 330px
+    }
+
+    .art {
+      width: 46px;
+      height: 46px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #3a2a8a, #e0568a);
+      display: grid;
+      place-items: center;
+      flex: none
+    }
+
+    .ti {
+      min-width: 0;
+      flex: 1
+    }
+
+    .ti b {
+      display: block;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis
+    }
+
+    .ti small {
+      color: var(--mu)
+    }
+
+    .ib {
+      font-size: 18px;
+      padding: 6px
+    }
+
+    .pp {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .2);
+      font-size: 18px
+    }
+
+    input[type=range] {
+      accent-color: var(--ac);
+      width: 90px;
+      min-width: 0
+    }
+
+    #amb select {
+      background: transparent;
+      color: #fff;
+      border: 0;
+      font: inherit;
+      font-size: 15px
+    }
+
+    #amb select option {
+      color: #222
+    }
+
+    #dock {
+      grid-column: 2/4;
+      display: flex;
+      gap: 0;
+      padding: 14px 18px;
+      overflow-x: auto;
+      align-items: center;
+      border-radius: 24px
+    }
+
+    #dock>div {
+      padding: 0 18px;
+      border-right: 1px solid var(--gb)
+    }
+
+    #dock>div:last-child {
+      border: 0
+    }
+
+    #dock>div:first-child {
+      padding-left: 0
+    }
+
+    #dock h5 {
+      margin: 0 0 8px;
+      font-size: 14px
+    }
+
+    #dock h5 small {
+      display: block;
+      font-weight: 400;
+      color: var(--mu);
+      font-size: 11px
+    }
+
+    .th {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto
+    }
+
+    .thumb {
+      width: 76px;
+      height: 54px;
+      border-radius: 12px;
+      border: 2px solid transparent;
+      flex: none;
+      padding: 0;
+      background-size: cover
+    }
+
+    .thumb.on {
+      border-color: var(--ac);
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, .4)
+    }
+
+    .sw {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      flex: none;
+      font-size: 18px
+    }
+
+    .sw.on {
+      border-color: #fff
+    }
+
+    .tg {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 30px;
+      font-size: 13px;
+      padding: 5px 0
+    }
+
+    .tg i {
+      width: 40px;
+      height: 22px;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, .25);
+      position: relative;
+      flex: none;
+      transition: .2s
+    }
+
+    .tg i:after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      transition: .2s
+    }
+
+    .tg.on i {
+      background: var(--ac)
+    }
+
+    .tg.on i:after {
+      left: 20px
+    }
+
+    #dock.hide {
+      display: none
+    }
+
+    body.zen nav,
+    body.zen #right,
+    body.zen #top,
+    body.zen #bars,
+    body.zen #dock {
+      opacity: 0;
+      pointer-events: none
+    }
+
+    .hist {
+      display: flex;
+      gap: 6px;
+      align-items: flex-end;
+      height: 78px;
+      margin-top: 14px
+    }
+
+    .hist div {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 3px
+    }
+
+    .hist i {
+      display: block;
+      width: 100%;
+      border-radius: 5px;
+      background: var(--ac);
+      opacity: .9
+    }
+
+    .hist small {
+      font-size: 10px;
+      color: var(--mu)
+    }
+
+    #cur {
+      font-size: 14px;
+      color: var(--mu);
+      margin: -2px 0 14px;
+      min-height: 1.3em
+    }
+
+    .dur {
+      display: flex;
+      gap: 6px
+    }
+
+    .dur input {
+      width: 52px;
+      background: rgba(255, 255, 255, .12);
+      border: 1px solid var(--gb);
+      border-radius: 10px;
+      padding: 7px 4px;
+      color: #fff;
+      text-align: center
+    }
+
+    #top {
+      gap: 10px;
+      align-items: center
+    }
+
+    #top .ib {
+      border-radius: 50%;
+      width: 44px;
+      height: 44px
+    }
+
+    [hidden] {
+      display: none !important
+    }
+
+    #lm {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: grid;
+      place-items: center;
+      background: rgba(0, 0, 0, .5)
+    }
+
+    .lmc {
+      width: min(540px, 92vw);
+      padding: 20px;
+      background: rgba(28, 24, 30, .88)
+    }
+
+    .lmc h4 {
+      margin: 0 0 12px;
+      font-size: 17px
+    }
+
+    .lr {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 10px
+    }
+
+    .lr input {
+      flex: 1;
+      min-width: 0;
+      background: rgba(255, 255, 255, .12);
+      border: 1px solid var(--gb);
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: #fff;
+      outline: 0
+    }
+
+    .btn {
+      background: rgba(255, 255, 255, .16);
+      border: 1px solid var(--gb);
+      border-radius: 12px;
+      padding: 9px 14px
+    }
+
+    .btn:hover {
+      background: rgba(255, 255, 255, .28)
+    }
+
+    #lmsg {
+      font-size: 12px;
+      color: var(--mu);
+      margin: 4px 0 10px;
+      line-height: 1.5
+    }
+
+    .lk {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 0;
+      font-size: 13px
+    }
+
+    .lk span {
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer
+    }
+
+    #ef {
+      position: fixed;
+      z-index: 6;
+      left: 224px;
+      bottom: 150px;
+      width: 340px;
+      padding: 10px
+    }
+
+    #ef button {
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #333;
+      font-size: 12px
+    }
+
+    @media(max-width:980px) {
+      #ef {
+        left: 10px;
+        right: 10px;
+        width: auto;
+        bottom: 10px
+      }
+    }
+
+    #view {
+      position: fixed;
+      z-index: 5;
+      left: 224px;
+      right: 14px;
+      top: 14px;
+      bottom: 14px;
+      padding: 24px;
+      overflow: auto;
+      background: rgba(24, 20, 26, .66)
+    }
+
+    #vh {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px
+    }
+
+    #vh h2 {
+      margin: 0;
+      font-size: 22px
+    }
+
+    #vx {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .15)
+    }
+
+    .vg {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+      margin-bottom: 12px
+    }
+
+    .vc {
+      aspect-ratio: 1.6;
+      border-radius: 16px;
+      border: 2px solid transparent;
+      position: relative;
+      overflow: hidden;
+      padding: 0
+    }
+
+    .vc.on {
+      border-color: var(--ac)
+    }
+
+    .vc span {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 18px 10px 8px;
+      background: linear-gradient(transparent, rgba(0, 0, 0, .65));
+      font-size: 13px;
+      text-align: left
+    }
+
+    .vr {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 0;
+      border-bottom: 1px solid var(--gb);
+      font-size: 14px
+    }
+
+    .vr label {
+      min-width: 110px
+    }
+
+    .vr input[type=range] {
+      flex: 1;
+      width: auto
+    }
+
+    .big {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px
+    }
+
+    .big div {
+      padding: 16px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, .1)
+    }
+
+    .big b {
+      display: block;
+      font-size: 26px
+    }
+
+    .big small {
+      color: var(--mu)
+    }
+
+    .flt {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 6px
+    }
+
+    .flt .btn.on {
+      background: var(--ac);
+      color: #2b1a10
+    }
+
+    #vb h3 {
+      margin: 16px 0 6px;
+      font-size: 13px;
+      color: var(--mu);
+      text-transform: uppercase;
+      letter-spacing: 1px
+    }
+
+    #vb ul {
+      line-height: 2;
+      padding-left: 20px;
+      margin: 0
+    }
+
+    @media(max-width:980px) {
+      #view {
+        left: 10px;
+        right: 10px
+      }
+    }
+
+    @media(max-width:980px) {
+      body {
+        overflow: auto
+      }
+
+      #app {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        min-height: 100%
+      }
+
+      #bg,
+      #rain,
+      #shade {
+        position: fixed
+      }
+
+      nav {
+        display: none
+      }
+
+      #top {
+        justify-content: center
+      }
+
+      #timer {
+        order: -1
+      }
+
+      #dock {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px
+      }
+
+      #dock>div {
+        border: 0;
+        padding: 0
+      }
+
+      #right {
+        overflow: visible
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="bg"></div><canvas id="rain"></canvas>
+  <div id="shade"></div>
+  <div id="app">
+    <nav class="glass">
+      <div class="logo">
+        <div class="mo">🌙</div><b>Study Space</b><small>Tập trung · Thư giãn · Phát triển ♡</small>
+      </div>
+      <button class="on" data-k="home">🏠 Trang chủ</button>
+      <button data-k="bg">🖼 Hình nền</button>
+      <button data-k="music">🎵 Âm nhạc</button>
+      <button data-k="amb">🔈 Âm thanh nền</button>
+      <button data-k="pomo">⏱ Pomodoro</button>
+      <button data-k="stat">📊 Thống kê</button>
+      <button data-k="task">📋 Công việc</button>
+      <hr>
+      <button data-k="set">⚙️ Cài đặt</button>
+      <button data-k="help">❔ Trợ giúp</button>
+      <p class="q">Bạn đang làm rất tốt! ♡</p>
+    </nav>
+
+    <div id="top">
+      <div id="hi" class="glass"><span id="hit"></span><span style="font-size:22px">🧑‍🎓</span></div><button
+        class="glass ib" id="fsb" title="Toàn màn hình">⛶</button>
+    </div>
+
+    <section id="timer" class="glass">
+      <div id="qt">Hít một hơi thật sâu…<br>Cùng tập trung nào ♡</div>
+      <div id="tm">25:00</div>
+      <div id="cur"></div>
+      <select id="mode">
+        <option value="f">🌱 Tập trung</option>
+        <option value="b">☕ Nghỉ ngắn</option>
+        <option value="l">🛋 Nghỉ dài</option>
+      </select>
+      <div class="ctl"><button class="rb" id="rs" title="Đặt lại">↺</button><button class="play"
+          id="pl">▶</button><button class="rb" id="sk" title="Bỏ qua">⏭</button></div>
+    </section>
+
+    <div id="right">
+      <section class="card glass" id="c-stat">
+        <h4>📊 Tiến độ hôm nay</h4>
+        <div class="prog">
+          <div id="ring">
+            <div><b id="rt">0m</b>Giờ học</div>
+          </div>
+          <div class="st">
+            <div><span class="dot" style="background:#7ddc9b"></span>Tập trung <b id="sf">0m</b></div>
+            <div><span class="dot" style="background:#ddd"></span>Nghỉ <b id="sb">0m</b></div>
+            <div>🏆 <span id="ss">0</span> phiên hôm nay</div>
+          </div>
+        </div>
+        <div class="hist" id="hist"></div>
+      </section>
+      <section class="card glass" id="c-task">
+        <h4>📋 Công việc</h4>
+        <div id="add"><input id="ti" placeholder="Thêm việc cần làm…" maxlength="60"><button id="ta">+</button></div>
+        <div id="tl"></div>
+      </section>
+    </div>
+
+    <div id="bars">
+      <div id="music" class="bar glass"><span>🎵</span>
+        <div class="art" id="art">🌌</div>
+        <div class="ti"><b id="tn">Lo-fi Study Vibes</b><small id="ts">Chillhop Music</small></div>
+        <button class="ib" id="pv">⏮</button><button class="pp" id="mp">▶</button><button class="ib" id="nx">⏭</button>
+        <button class="ib" id="lk" title="Dán link nhạc">🔗</button><span>🔊</span><input type="range" id="mv" min="0"
+          max="100" value="60">
+      </div>
+      <div id="amb" class="bar glass"><span style="font-size:26px">🌧</span>
+        <select id="as">
+          <option value="rain">Mưa</option>
+          <option value="wave">Sóng biển</option>
+          <option value="wind">Gió</option>
+          <option value="brown">Brown noise</option>
+        </select>
+        <button class="pp" id="ap">▶</button><input type="range" id="av" min="0" max="100" value="60">
+      </div>
+    </div>
+
+    <div id="dock" class="glass">
+      <div>
+        <h5>🖼 Hình nền<small>Đổi không gian của bạn</small></h5>
+        <div class="th" id="ths"></div>
+      </div>
+      <div>
+        <h5>🎨 Chủ đề<small>Chọn màu</small></h5>
+        <div class="th" id="sws"></div>
+      </div>
+      <div>
+        <h5>⏱ Thời lượng (phút)<small>Học · Nghỉ · Nghỉ dài</small></h5>
+        <div class="dur"><input type="number" id="d-f" min="1" max="180"><input type="number" id="d-b" min="1"
+            max="180"><input type="number" id="d-l" min="1" max="180"></div>
+      </div>
+      <div>
+        <h5>⚡ Cài đặt nhanh</h5>
+        <div class="tg on" id="t-brk"><span>Nhắc nghỉ tự động</span><i></i></div>
+        <div class="tg" id="t-dk"><span>Chế độ tối</span><i></i></div>
+        <div class="tg on" id="t-qt"><span>Hiện câu nói</span><i></i></div>
+        <div class="tg" id="t-up"><span>📷 Ảnh của bạn</span><i></i></div><input type="file" id="up" accept="image/*"
+          hidden>
+      </div>
+    </div>
+  </div>
+
+  <section id="view" class="glass" hidden>
+    <div id="vh">
+      <h2 id="vt"></h2><button id="vx">✕</button>
+    </div>
+    <div id="vb"></div>
+  </section>
+  <div id="lm" hidden>
+    <div class="glass lmc">
+      <h4>🔗 Dán link nhạc</h4>
+      <div class="lr"><input id="lu" placeholder="Link mp3, YouTube, Spotify, SoundCloud…"><button class="btn"
+          id="lg">Phát</button></div>
+      <div class="lr"><button class="btn" id="lf">📁 Chọn file từ máy</button><input type="file" id="lfi"
+          accept="audio/*" hidden><button class="btn" id="lx" style="margin-left:auto">Đóng</button></div>
+      <p id="lmsg">Hỗ trợ link file âm thanh trực tiếp (.mp3, .ogg, .wav, .m4a), YouTube, Spotify và SoundCloud.</p>
+      <div id="lsv"></div>
+    </div>
+  </div>
+  <div id="ef" class="glass" hidden><button id="efx">✕</button>
+    <div id="efb"></div>
+  </div>
+  <script>
+    const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+    const sv = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)) } catch (e) { } }, ld = (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v) } catch (e) { return d } };
+
+    /* Scenes */
+    const SC = [
+      { n: 'Phòng ấm', rain: 1, c: 'radial-gradient(circle at 24% 38%,rgba(255,190,100,.85),transparent 28%),radial-gradient(circle at 70% 25%,rgba(90,120,150,.7),transparent 35%),linear-gradient(120deg,#3a2316,#6a4327 50%,#2c3a4a)' },
+      { n: 'Cửa sổ mưa', rain: 1, c: 'radial-gradient(circle at 70% 70%,rgba(255,200,120,.35),transparent 30%),linear-gradient(#27384a,#3d5167 60%,#1d2936)' },
+      { n: 'Anh đào', c: 'radial-gradient(circle at 30% 30%,#fff3f7,transparent 40%),linear-gradient(#fbd9e6,#f2a2bf 60%,#c9708f)' },
+      { n: 'Biển chiều', c: 'linear-gradient(#ffb36b,#ff7a8a 45%,#4c5a8c 52%,#1e2b55)' },
+      { n: 'Rừng', c: 'radial-gradient(circle at 60% 20%,rgba(200,255,180,.35),transparent 35%),linear-gradient(#10321f,#1f5a34 55%,#0a2415)' },
+      { n: 'Thành phố', c: 'linear-gradient(#ff9d6c,#a8509a 50%,#1c1f4a)' }];
+    let sc = 0, rainOn = false;
+    function setBg(i) { sc = i; $('#bg').style.background = SC[i].c; $('#bg').style.backgroundSize = 'cover'; rainOn = !!SC[i].rain; $$('.thumb').forEach((e, j) => e.classList.toggle('on', j === i)); sv('sc', i) }
+    SC.forEach((s, i) => { const b = document.createElement('button'); b.className = 'thumb'; b.style.background = s.c; b.title = s.n; b.onclick = () => setBg(i); $('#ths').appendChild(b) });
+    $('#t-up').onclick = () => $('#up').click();
+    $('#up').onchange = e => { const f = e.target.files[0]; if (!f) return; $('#bg').style.background = 'url(' + URL.createObjectURL(f) + ') center/cover'; rainOn = false; $$('.thumb').forEach(x => x.classList.remove('on')) };
+
+    /* Rain canvas */
+    const cv = $('#rain'), cx = cv.getContext('2d'); let drops = [];
+    function rs() { cv.width = innerWidth; cv.height = innerHeight; drops = Array.from({ length: 130 }, () => ({ x: Math.random() * cv.width, y: Math.random() * cv.height, l: 10 + Math.random() * 18, v: 9 + Math.random() * 9 })) }
+    rs(); addEventListener('resize', rs);
+    (function f() { cx.clearRect(0, 0, cv.width, cv.height); if (rainOn) { cx.strokeStyle = 'rgba(220,235,255,.35)'; cx.lineWidth = 1; cx.beginPath(); drops.forEach(d => { cx.moveTo(d.x, d.y); cx.lineTo(d.x - 2, d.y + d.l); d.y += d.v; if (d.y > cv.height) { d.y = -20; d.x = Math.random() * cv.width } }); cx.stroke() } requestAnimationFrame(f) })();
+
+    /* Theme */
+    const TH = ['#f6c3a3', '#b9a0d8', '#7d93e0', '#5fa89c', '#7cc98d'];
+    TH.forEach((c, i) => { const b = document.createElement('button'); b.className = 'sw'; b.style.background = c; b.onclick = () => { document.documentElement.style.setProperty('--ac', c); $$('.sw').forEach((e, j) => e.classList.toggle('on', i === j)); b.innerHTML = '✓'; $$('.sw').forEach((e, j) => { if (j !== i) e.innerHTML = '' }); sv('th', i) }; $('#sws').appendChild(b) });
+    const tog = (id, fn) => { $(id).onclick = () => { $(id).classList.toggle('on'); fn($(id).classList.contains('on')) } };
+    let brk = true;
+    tog('#t-brk', v => brk = v); tog('#t-dk', v => { document.documentElement.classList.toggle('dark', v); sv('dk', v) }); tog('#t-qt', v => $('#qt').style.visibility = v ? 'visible' : 'hidden');
+
+    /* Greeting */
+    const h = new Date().getHours(); $('#hit').textContent = h < 11 ? 'Chào buổi sáng! ☀️' : h < 18 ? 'Chào buổi chiều! 🌤' : 'Chào buổi tối! 🌙';
+
+    /* Audio */
+    let ctx, master, musicBus, ambBus;
+    function init() { if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return } ctx = new (window.AudioContext || window.webkitAudioContext)(); master = ctx.createGain(); master.connect(ctx.destination); musicBus = ctx.createGain(); ambBus = ctx.createGain(); musicBus.connect(master); ambBus.connect(master); musicBus.gain.value = $('#mv').value / 100; ambBus.gain.value = $('#av').value / 100 * .8 }
+    $('#mv').oninput = () => { if (musicBus) musicBus.gain.value = $('#mv').value / 100; au.volume = $('#mv').value / 100 };
+    $('#av').oninput = () => ambBus && (ambBus.gain.value = $('#av').value / 100 * .8);
+    function noise(t) { const n = ctx.sampleRate * 3, b = ctx.createBuffer(1, n, ctx.sampleRate), d = b.getChannelData(0); let l = 0; for (let i = 0; i < n; i++) { const w = Math.random() * 2 - 1; if (t === 'brown') { l = (l + .02 * w) / 1.02; d[i] = l * 3.5 } else d[i] = w } const s = ctx.createBufferSource(); s.buffer = b; s.loop = true; return s }
+    function lfo(f, d, t) { const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = f; g.gain.value = d; o.connect(g).connect(t); o.start(); return o }
+    const AM = {
+      rain(o) { const s = noise('w'), a = ctx.createBiquadFilter(), b = ctx.createBiquadFilter(); a.type = 'highpass'; a.frequency.value = 900; b.type = 'lowpass'; b.frequency.value = 7000; s.connect(a).connect(b).connect(o); s.start(); return [s] },
+      wave(o) { const s = noise('brown'), l = ctx.createBiquadFilter(), g = ctx.createGain(); l.type = 'lowpass'; l.frequency.value = 700; g.gain.value = .55; s.connect(l).connect(g).connect(o); s.start(); return [s, lfo(.1, .4, g.gain)] },
+      wind(o) { const s = noise('w'), b = ctx.createBiquadFilter(); b.type = 'bandpass'; b.frequency.value = 500; b.Q.value = .8; s.connect(b).connect(o); s.start(); return [s, lfo(.08, 300, b.frequency)] },
+      brown(o) { const s = noise('brown'); s.connect(o); s.start(); return [s] }
+    };
+    let amN = null;
+    function ambStart() { init(); ambStop(); amN = AM[$('#as').value](ambBus); $('#ap').textContent = '⏸' }
+    function ambStop() { if (amN) { amN.forEach(n => n.stop()); amN = null } $('#ap').textContent = '▶' }
+    $('#ap').onclick = () => amN ? ambStop() : ambStart();
+    $('#as').onchange = () => { $('#amb span').textContent = { rain: '🌧', wave: '🌊', wind: '🍃', brown: '〰️' }[$('#as').value]; if (amN) ambStart() };
+
+    const TR = [
+      { n: 'Lo-fi Study Vibes', s: 'Chillhop Music', a: '🌌', ch: [[57, 60, 64, 67], [53, 57, 60, 64], [55, 59, 62, 65], [52, 55, 59, 62]], t: 'triangle', d: 4 },
+      { n: 'Midnight Jazz', s: 'Soft Chords', a: '🎷', ch: [[50, 57, 60, 64], [55, 59, 62, 65], [48, 55, 59, 64], [57, 60, 64, 67]], t: 'sine', d: 4.5 },
+      { n: 'Gentle Piano', s: 'Calm Focus', a: '🎹', ch: [[48, 55, 64], [53, 57, 64], [55, 59, 62], [57, 60, 64]], t: 'triangle', d: 3.5 }];
+    let ti = 0, mIv = null, mOn = false, mLp;
+    function mf(m) { return 440 * Math.pow(2, (m - 69) / 12) }
+    function chord(i, k) {
+      const t = ctx.currentTime, T = TR[ti]; T.ch[k % 4].forEach((m, j) => { const o = ctx.createOscillator(), g = ctx.createGain(); o.type = T.t; o.frequency.value = mf(m); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.12, t + .4); g.gain.exponentialRampToValueAtTime(.001, t + T.d - .2); o.connect(g).connect(mLp); o.start(t + j * .06); o.stop(t + T.d) });
+      const b = ctx.createOscillator(), g = ctx.createGain(); b.frequency.value = mf(T.ch[k % 4][0] - 12); g.gain.setValueAtTime(.22, t); g.gain.exponentialRampToValueAtTime(.001, t + T.d - .4); b.connect(g).connect(mLp); b.start(t); b.stop(t + T.d)
+    }
+    function mStart() { init(); extStop(); mStop(true); mLp = ctx.createBiquadFilter(); mLp.type = 'lowpass'; mLp.frequency.value = 1500; mLp.connect(musicBus); let k = 0; chord(ti, k++); mIv = setInterval(() => chord(ti, k++), TR[ti].d * 1000); mOn = true; $('#mp').textContent = '⏸' }
+    function mStop(q) { clearInterval(mIv); if (mLp) { try { mLp.disconnect() } catch (e) { } } mOn = false; if (!q) $('#mp').textContent = '▶' }
+    function showT() { const T = TR[ti]; $('#tn').textContent = T.n; $('#ts').textContent = T.s; $('#art').textContent = T.a }
+    $('#mp').onclick = () => { if (ext) { if (au.src) au.paused ? au.play() : au.pause(); return } mOn ? mStop() : mStart() };
+    $('#nx').onclick = () => { const w = mOn || ext; extStop(); ti = (ti + 1) % TR.length; showT(); if (w) mStart() };
+    $('#pv').onclick = () => { const w = mOn || ext; extStop(); ti = (ti + TR.length - 1) % TR.length; showT(); if (w) mStart() };
+
+    /* Link nhạc ngoài */
+    const au = new Audio(); let ext = false, lks = ld('lks', []);
+    au.onplay = () => $('#mp').textContent = '⏸'; au.onpause = () => $('#mp').textContent = '▶';
+    au.onerror = () => { if (ext && au.src) msg('Không phát được link này. Hãy thử link file .mp3 trực tiếp, YouTube hoặc Spotify. Một số trang chặn phát từ bên ngoài, hoặc trình duyệt/trang đang chặn nguồn ngoài.') };
+    const msg = t => $('#lmsg').textContent = t;
+    function embedOf(u) {
+      let m;
+      if (m = u.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{11})/)) return { t: 'YouTube', s: 'https://www.youtube.com/embed/' + m[1] + '?autoplay=1', h: 200 };
+      if (m = u.match(/youtube\.com\/playlist\?(?:.*&)?list=([\w-]+)/)) return { t: 'YouTube', s: 'https://www.youtube.com/embed/videoseries?list=' + m[1] + '&autoplay=1', h: 200 };
+      if (m = u.match(/open\.spotify\.com\/(?:intl-\w+\/)?(track|album|playlist|episode|show)\/(\w+)/)) return { t: 'Spotify', s: 'https://open.spotify.com/embed/' + m[1] + '/' + m[2], h: /track|episode/.test(m[1]) ? 152 : 352 };
+      if (/soundcloud\.com\//.test(u)) return { t: 'SoundCloud', s: 'https://w.soundcloud.com/player/?auto_play=true&url=' + encodeURIComponent(u), h: 166 };
+      return null
+    }
+    function extStop() { try { au.pause(); au.removeAttribute('src') } catch (e) { } $('#efb').innerHTML = ''; $('#ef').hidden = true; ext = false }
+    function setNow(n, s) { $('#tn').textContent = n; $('#ts').textContent = s; $('#art').textContent = '🔗' }
+    function nameOf(u) { try { const x = new URL(u); const l = decodeURIComponent(x.pathname.split('/').filter(Boolean).pop() || ''); return l && /\.\w{2,4}$/.test(l) ? l : x.hostname.replace('www.', '') } catch (e) { return u } }
+    function playUrl(u, save) {
+      u = (u || '').trim(); if (!/^https?:\/\//i.test(u)) { msg('Link phải bắt đầu bằng http:// hoặc https://'); return }
+      mStop(); extStop(); init(); ext = true; const e = embedOf(u), n = nameOf(u);
+      if (e) { const f = document.createElement('iframe'); f.src = e.s; f.height = e.h; f.allow = 'autoplay; encrypted-media'; f.style.cssText = 'width:100%;border:0;border-radius:12px;display:block'; $('#efb').appendChild(f); $('#ef').hidden = false; setNow(e.t, n); $('#mp').textContent = '▶' }
+      else { au.src = u; au.volume = $('#mv').value / 100; setNow(n, 'Link ngoài'); au.play().catch(() => msg('Trình duyệt chưa cho phát. Bấm nút ▶ ở thanh nhạc để thử lại.')) }
+      if (save && !lks.some(k => k.u === u)) { lks.unshift({ u, n: (e ? e.t + ' · ' : '') + n }); lks = lks.slice(0, 8); sv('lks', lks) }
+      rl(); $('#lm').hidden = true
+    }
+    function rl() { const b = $('#lsv'); b.innerHTML = lks.length ? '<small style="color:var(--mu)">Link đã lưu</small>' : ''; lks.forEach((k, i) => { const r = document.createElement('div'); r.className = 'lk'; const s = document.createElement('span'); s.textContent = '▶ ' + k.n; s.title = k.u; s.onclick = () => playUrl(k.u, false); const x = document.createElement('button'); x.textContent = '✕'; x.onclick = () => { lks.splice(i, 1); sv('lks', lks); rl() }; r.append(s, x); b.appendChild(r) }) }
+    $('#lk').onclick = () => { $('#lm').hidden = false; $('#lu').focus(); rl() };
+    $('#lx').onclick = () => $('#lm').hidden = true; $('#lm').onclick = e => { if (e.target.id === 'lm') $('#lm').hidden = true };
+    $('#lg').onclick = () => playUrl($('#lu').value, true); $('#lu').onkeydown = e => { if (e.key === 'Enter') playUrl($('#lu').value, true) };
+    $('#efx').onclick = () => { extStop(); $('#mp').textContent = '▶' };
+    $('#lf').onclick = () => $('#lfi').click();
+    $('#lfi').onchange = e => { const f = e.target.files[0]; if (!f) return; mStop(); extStop(); init(); ext = true; au.src = URL.createObjectURL(f); au.volume = $('#mv').value / 100; setNow(f.name.replace(/\.\w+$/, ''), 'File của bạn'); au.play().catch(() => msg('Bấm ▶ để phát.')); $('#lm').hidden = true };
+
+    /* Pomodoro */
+    const D = { f: 25 * 60, b: 5 * 60, l: 15 * 60 };
+    const day = () => new Date().toLocaleDateString('sv-SE');
+    let hist = ld('hist', {}), mode = 'f', left = D.f, run = null;
+    hist[day()] = hist[day()] || { f: 0, b: 0, s: 0 };
+    let fs = hist[day()].f, bs = hist[day()].b;
+    const fm = s => String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+    const hm = s => { const m = Math.floor(s / 60); return m >= 60 ? Math.floor(m / 60) + 'h ' + (m % 60) + 'm' : m + 'm' };
+    function beep() { try { init(); const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = 660; g.gain.setValueAtTime(.3, ctx.currentTime); g.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + 1.2); o.connect(g).connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 1.2) } catch (e) { } }
+    function draw() {
+      $('#tm').textContent = fm(left); $('#mode').value = mode; $('#pl').textContent = run ? '⏸' : '▶'; document.title = (run ? fm(left) + ' · ' : '') + 'Study Space';
+      $('#sf').textContent = hm(fs); $('#sb').textContent = hm(bs); $('#rt').textContent = hm(fs);
+      const p = Math.min(100, fs / (240 * 60) * 100); $('#ring').style.background = 'conic-gradient(#7ddc9b ' + p + '%,rgba(255,255,255,.2) 0)';
+      $('#ss').textContent = hist[day()].s; $('#cur').textContent = cur ? '🎯 ' + cur : 'Bấm vào một công việc bên phải để tập trung vào nó';
+      let hh = ''; for (let i = 6; i >= 0; i--) { const d = new Date(Date.now() - i * 864e5), v = (hist[d.toLocaleDateString('sv-SE')] || { f: 0 }).f; hh += '<div title="' + hm(v) + '"><i style="height:' + Math.max(4, Math.min(100, v / (240 * 60) * 100)) + '%"></i><small>' + ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][d.getDay()] + '</small></div>' } $('#hist').innerHTML = hh
+    }
+    function next() { if (mode === 'f') { cyc++; mode = cyc % PS.n === 0 ? 'l' : 'b' } else mode = 'f'; left = D[mode]; if (!PS.auto) { clearInterval(run); run = null } }
+    $('#pl').onclick = () => { init(); if (run) { clearInterval(run); run = null } else run = setInterval(() => { mode === 'f' ? fs++ : bs++; if (--left <= 0) { if (brk) beep(); if (mode === 'f') hist[day()].s++; next() } const hd = hist[day()]; hd.f = fs; hd.b = bs; if ((fs + bs) % 15 === 0) sv('hist', hist); draw() }, 1000); draw() };
+    $('#rs').onclick = () => { clearInterval(run); run = null; left = D[mode]; draw() };
+    $('#sk').onclick = () => { next(); draw() };
+    $('#mode').onchange = e => { mode = e.target.value; left = D[mode]; clearInterval(run); run = null; draw() };
+
+    /* Tasks */
+    let cur = ''; let tasks = ld('tasks', [{ t: 'Hoàn thành bài tập Đại số tuyến tính', d: 1 }, { t: 'Đọc bài báo tiếng Anh', d: 1 }, { t: 'Chuẩn bị thuyết trình', d: 0 }, { t: 'Lên kế hoạch tuần sau', d: 0 }]);
+    function rt() { const l = $('#tl'); l.innerHTML = ''; tasks.forEach((k, i) => { const r = document.createElement('div'); r.className = 'task' + (k.d ? ' done' : ''); const c = document.createElement('input'); c.type = 'checkbox'; c.checked = !!k.d; c.onchange = () => { k.d = c.checked ? 1 : 0; sv('tasks', tasks); rt() }; const s = document.createElement('span'); s.textContent = k.t; s.style.cursor = 'pointer'; s.title = 'Đặt làm việc đang tập trung'; s.onclick = () => { cur = k.t; draw() }; const x = document.createElement('button'); x.className = 'x'; x.textContent = '✕'; x.onclick = () => { tasks.splice(i, 1); sv('tasks', tasks); rt() }; r.append(c, s, x); l.appendChild(r) }) }
+    function addT() { const v = $('#ti').value.trim(); if (!v) return; tasks.push({ t: v, d: 0 }); $('#ti').value = ''; sv('tasks', tasks); rt() }
+    $('#ta').onclick = addT; $('#ti').onkeydown = e => { if (e.key === 'Enter') addT() };
+
+    let bl = 0, cyc = 0; const mix = {}, PS = ld('ps', { auto: true, n: 4 });
+    const VR = {
+      bg() {
+        const b = $('#vb'); b.innerHTML = '<div class="vg" id="vgg"></div><div class="vr"><label>Độ tối</label><input type="range" id="vdim" min="0" max="70" value="' + Math.round(($('#shade').style.opacity || .12) * 100) + '"></div><div class="vr"><label>Làm mờ</label><input type="range" id="vbl" min="0" max="12" value="' + bl + '"></div><div class="vr"><label style="flex:1">Hiệu ứng mưa rơi</label><button class="btn" id="vrn">' + (rainOn ? 'Bật' : 'Tắt') + '</button></div><div class="vr"><button class="btn" id="vup">📷 Tải ảnh của bạn</button></div>';
+        SC.forEach((s, i) => { const c = document.createElement('button'); c.className = 'vc' + (i === sc ? ' on' : ''); c.style.background = s.c; c.innerHTML = '<span>' + s.n + '</span>'; c.onclick = () => { setBg(i); VR.bg() }; $('#vgg').appendChild(c) });
+        $('#vdim').oninput = e => $('#shade').style.opacity = e.target.value / 100;
+        $('#vbl').oninput = e => { bl = e.target.value; $('#bg').style.filter = 'blur(' + bl + 'px)' };
+        $('#vrn').onclick = () => { rainOn = !rainOn; VR.bg() }; $('#vup').onclick = () => $('#up').click()
+      },
+      music() {
+        const b = $('#vb'); b.innerHTML = '<h3>Nhạc có sẵn</h3><div id="vtr"></div><h3>Link của bạn</h3><div class="vr"><button class="btn" id="vlk">🔗 Dán link / chọn file</button></div><div id="vls"></div>';
+        TR.forEach((t, i) => { const r = document.createElement('div'); r.className = 'vr'; r.innerHTML = '<span style="font-size:24px">' + t.a + '</span><label style="flex:1"><b>' + t.n + '</b><br><small style="color:var(--mu)">' + t.s + '</small></label>'; const p = document.createElement('button'); p.className = 'btn'; p.textContent = (mOn && ti === i) ? '⏸ Dừng' : '▶ Phát'; p.onclick = () => { if (mOn && ti === i) mStop(); else { ti = i; showT(); mStart() } VR.music() }; r.appendChild(p); $('#vtr').appendChild(r) });
+        lks.forEach((k, i) => { const r = document.createElement('div'); r.className = 'vr'; r.innerHTML = '<label style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🔗 ' + k.n + '</label>'; const p = document.createElement('button'); p.className = 'btn'; p.textContent = '▶ Phát'; p.onclick = () => { playUrl(k.u, false); VR.music() }; const x = document.createElement('button'); x.className = 'btn'; x.textContent = '✕'; x.onclick = () => { lks.splice(i, 1); sv('lks', lks); VR.music() }; r.append(p, x); $('#vls').appendChild(r) });
+        $('#vlk').onclick = () => $('#lk').click()
+      },
+      amb() {
+        const b = $('#vb'); b.innerHTML = '<p style="color:var(--mu);margin:0 0 6px">Bật nhiều âm thanh cùng lúc và chỉnh âm lượng riêng cho từng loại.</p>';
+        [['rain', '🌧', 'Mưa'], ['wave', '🌊', 'Sóng biển'], ['wind', '🍃', 'Gió'], ['brown', '〰️', 'Brown noise']].forEach(([id, ic, n]) => {
+          const r = document.createElement('div'); r.className = 'vr'; r.innerHTML = '<button class="pp">' + ic + '</button><label>' + n + '</label><input type="range" min="0" max="100" value="' + (mix[id] ? mix[id].v : 60) + '">'; const bt = r.querySelector('button'), sl = r.querySelector('input'); if (mix[id]) bt.style.background = 'var(--ac)';
+          bt.onclick = () => { init(); if (mix[id]) { mix[id].n.forEach(x => x.stop()); mix[id].g.disconnect(); delete mix[id] } else { const g = ctx.createGain(); g.gain.value = sl.value / 100; g.connect(ambBus); mix[id] = { g, v: sl.value, n: AM[id](g) } } VR.amb() };
+          sl.oninput = () => { if (mix[id]) { mix[id].g.gain.value = sl.value / 100; mix[id].v = sl.value } }; b.appendChild(r)
+        })
+      },
+      pomo() {
+        const b = $('#vb'); b.innerHTML = '';
+        const row = (l, h) => { const r = document.createElement('div'); r.className = 'vr'; r.innerHTML = '<label style="flex:1">' + l + '</label>'; r.appendChild(h); b.appendChild(r) };
+        const num = (v, fn) => { const i = document.createElement('input'); i.type = 'number'; i.value = v; i.style.cssText = 'width:70px;background:rgba(255,255,255,.12);border:1px solid var(--gb);border-radius:10px;padding:7px;color:#fff;text-align:center'; i.onchange = () => { const n = Math.max(1, Math.min(180, +i.value || 1)); i.value = n; fn(n) }; return i };
+        const sw = (v, fn) => { const t = document.createElement('button'); t.className = 'btn'; const s = () => t.textContent = v() ? 'Bật' : 'Tắt'; s(); t.onclick = () => { fn(); s() }; return t };
+        [['f', 'Học (phút)'], ['b', 'Nghỉ ngắn (phút)'], ['l', 'Nghỉ dài (phút)']].forEach(([k, l]) => row(l, num(D[k] / 60, v => { $('#d-' + k).value = v; $('#d-' + k).onchange() })));
+        row('Số phiên học trước mỗi lần nghỉ dài', num(PS.n, v => { PS.n = v; sv('ps', PS) }));
+        row('Tự động chuyển phiên tiếp theo', sw(() => PS.auto, () => { PS.auto = !PS.auto; sv('ps', PS) }));
+        row('Chuông khi hết giờ', sw(() => brk, () => $('#t-brk').click()))
+      },
+      stat() {
+        const b = $('#vb'), dy = Object.values(hist), tf = dy.reduce((a, d) => a + d.f, 0), ts = dy.reduce((a, d) => a + d.s, 0), best = Math.max(0, ...dy.map(d => d.f));
+        const ok = j => { const d = hist[new Date(Date.now() - j * 864e5).toLocaleDateString('sv-SE')]; return d && d.f >= 60 }; let st = 0, i = 0; if (!ok(0)) i = 1; while (ok(i)) { st++; i++ }
+        let hh = ''; for (let j = 13; j >= 0; j--) { const d = new Date(Date.now() - j * 864e5), v = (hist[d.toLocaleDateString('sv-SE')] || { f: 0 }).f; hh += '<div title="' + hm(v) + '"><i style="height:' + Math.max(3, Math.min(100, v / (240 * 60) * 100)) + '%"></i><small>' + d.getDate() + '/' + (d.getMonth() + 1) + '</small></div>' }
+        b.innerHTML = '<div class="big"><div><b>' + hm(fs) + '</b><small>Học hôm nay</small></div><div><b>' + hist[day()].s + '</b><small>Phiên hôm nay</small></div><div><b>' + hm(tf) + '</b><small>Tổng thời gian học</small></div><div><b>' + ts + '</b><small>Tổng số phiên</small></div><div><b>🔥 ' + st + '</b><small>Chuỗi ngày (≥1 giờ)</small></div><div><b>' + hm(best) + '</b><small>Ngày tốt nhất</small></div></div><h3>14 ngày gần nhất (mục tiêu 4 giờ/ngày)</h3><div class="hist" style="height:190px">' + hh + '</div>'
+      },
+      task() {
+        const b = $('#vb'); b.innerHTML = '<div id="add"><input id="vti" placeholder="Thêm việc cần làm…" maxlength="60"><button id="vta">+</button></div><div class="flt" id="vfl"></div><div id="vtl"></div><div class="vr"><span id="vcn" style="flex:1;color:var(--mu)"></span><button class="btn" id="vcl">Xóa việc đã xong</button></div>';
+        let f = 0; const r = () => {
+          const fl = $('#vfl'); fl.innerHTML = '';['Tất cả', 'Chưa xong', 'Đã xong'].forEach((n, i) => { const x = document.createElement('button'); x.className = 'btn' + (i === f ? ' on' : ''); x.textContent = n; x.onclick = () => { f = i; r() }; fl.appendChild(x) });
+          const l = $('#vtl'); l.innerHTML = ''; tasks.forEach((k, i) => { if (f === 1 && k.d || f === 2 && !k.d) return; const w = document.createElement('div'); w.className = 'vr'; const c = document.createElement('input'); c.type = 'checkbox'; c.checked = !!k.d; c.onchange = () => { k.d = c.checked ? 1 : 0; sv('tasks', tasks); rt(); r() }; const s = document.createElement('label'); s.style.cssText = 'flex:1;cursor:pointer;' + (k.d ? 'text-decoration:line-through;color:var(--mu)' : ''); s.textContent = k.t; s.title = 'Tập trung vào việc này'; s.onclick = () => { cur = k.t; draw() }; const x = document.createElement('button'); x.className = 'btn'; x.textContent = '✕'; x.onclick = () => { tasks.splice(i, 1); sv('tasks', tasks); rt(); r() }; w.append(c, s, x); l.appendChild(w) });
+          $('#vcn').textContent = tasks.filter(k => k.d).length + '/' + tasks.length + ' việc đã xong'
+        };
+        const add = () => { const v = $('#vti').value.trim(); if (!v) return; tasks.push({ t: v, d: 0 }); sv('tasks', tasks); rt(); $('#vti').value = ''; r() };
+        $('#vta').onclick = add; $('#vti').onkeydown = e => { if (e.key === 'Enter') add() }; $('#vcl').onclick = () => { tasks = tasks.filter(k => !k.d); sv('tasks', tasks); rt(); r() }; r()
+      },
+      set() {
+        const b = $('#vb'); b.innerHTML = '<h3>Màu chủ đề</h3><div class="th" id="vsw"></div><div class="vr"><label style="flex:1">Chế độ tối</label><button class="btn" id="vdk"></button></div><div class="vr"><label style="flex:1">Hiện câu nói</label><button class="btn" id="vqt"></button></div><div class="vr"><label style="flex:1">Dữ liệu</label><button class="btn" id="vrs">Xóa toàn bộ dữ liệu</button></div>';
+        TH.forEach((c, i) => { const s = document.createElement('button'); s.className = 'sw' + (ld('th', 0) === i ? ' on' : ''); s.style.background = c; s.onclick = () => { $$('#sws .sw')[i].click(); VR.set() }; $('#vsw').appendChild(s) });
+        const sy = () => { $('#vdk').textContent = $('#t-dk').classList.contains('on') ? 'Bật' : 'Tắt'; $('#vqt').textContent = $('#t-qt').classList.contains('on') ? 'Bật' : 'Tắt' }; sy();
+        $('#vdk').onclick = () => { $('#t-dk').click(); sy() }; $('#vqt').onclick = () => { $('#t-qt').click(); sy() };
+        $('#vrs').onclick = () => { if (confirm('Xóa toàn bộ thống kê, công việc và cài đặt?')) { try { localStorage.clear() } catch (e) { } location.reload() } }
+      },
+      help() { $('#vb').innerHTML = '<h3>Phím tắt</h3><ul><li><b>Space</b>: bắt đầu / dừng đồng hồ</li><li><b>M</b>: bật / tắt nhạc</li><li><b>Esc</b>: thoát chế độ ẩn giao diện</li><li><b>Nhấp đúp vào đồng hồ</b>: ẩn / hiện giao diện</li></ul><h3>Mẹo học hiệu quả</h3><ul><li>Chọn một việc trong mục Công việc để tập trung vào nó.</li><li>Học 25 phút, nghỉ 5 phút; sau 4 phiên thì nghỉ dài.</li><li>Trộn mưa nhẹ với nhạc lofi để át tiếng ồn xung quanh.</li><li>Dữ liệu được lưu trên trình duyệt của bạn.</li></ul>' }
+    };
+    function openView(k, btn) {
+      $$('nav button').forEach(x => x.classList.toggle('on', x === btn)); const v = $('#view'); if (k === 'home') { v.hidden = true; return }
+      $('#vt').textContent = btn.textContent.trim(); VR[k](); v.hidden = false
+    }
+    $('#vx').onclick = () => { $('#view').hidden = true; $$('nav button').forEach((x, i) => x.classList.toggle('on', i === 0)) };
+    /* Nav */
+    const act = { bg: () => $('#dock').classList.toggle('hide'), music: () => $('#music').scrollIntoView({ behavior: 'smooth' }), amb: () => $('#amb').scrollIntoView({ behavior: 'smooth' }), pomo: () => $('#timer').scrollIntoView({ behavior: 'smooth' }), stat: () => $('#c-stat').scrollIntoView({ behavior: 'smooth' }), task: () => { $('#c-task').scrollIntoView({ behavior: 'smooth' }); $('#ti').focus() }, set: () => $('#dock').classList.remove('hide'), help: () => alert('Mẹo: ☰ chọn nền, bật nhạc/âm thanh, bấm ▶ để bắt đầu Pomodoro. Nút 👁 (nếu có) ẩn giao diện.'), home: () => { } };
+    $$('nav button').forEach(b => b.onclick = () => openView(b.dataset.k, b));
+    $('#timer').ondblclick = () => document.body.classList.toggle('zen');
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') document.body.classList.remove('zen'); if (/INPUT|SELECT|BUTTON/.test(e.target.tagName)) return; if (e.code === 'Space') { e.preventDefault(); $('#pl').click() } if (e.code === 'KeyM') $('#mp').click() });
+    $('#fsb').onclick = () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+    addEventListener('beforeunload', () => sv('hist', hist));
+
+    /* Boot */
+    ['f', 'b', 'l'].forEach(k => { const e = $('#d-' + k); e.value = ld('d' + k, D[k] / 60); D[k] = e.value * 60; e.onchange = () => { const v = Math.max(1, Math.min(180, +e.value || 1)); e.value = v; D[k] = v * 60; sv('d' + k, v); if (!run && mode === k) { left = D[k]; draw() } } }); left = D[mode];
+    setBg(ld('sc', 0)); $$('.sw')[ld('th', 0)].click(); if (ld('dk', false)) $('#t-dk').click(); rt(); draw();
+  </script>
+</body>
+
+</html>
